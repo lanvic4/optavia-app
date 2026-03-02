@@ -39,9 +39,9 @@
 
         <div class="card bg-white p-6">
             <h2 class="font-bold text-gray-700 mb-1">Intelligent Item Search</h2>
-            <p class="text-xs text-gray-500 mb-3">Scan barcode or type name of food.</p>
+            <p class="text-xs text-gray-500 mb-3">Search name or scan barcode.</p>
             
-            <input type="text" id="searchInput" placeholder="Search protein, veggie, fat..." class="w-full border p-2 rounded-lg mb-2 text-sm">
+            <input type="text" id="searchInput" placeholder="Salmon, Broccoli, Olive Oil..." class="w-full border p-2 rounded-lg mb-2 text-sm">
             
             <div class="grid grid-cols-2 gap-2 mb-3">
                 <button onclick="searchFood(false)" class="bg-gray-800 text-white p-2 rounded-lg font-bold text-sm">📷 Scan Barcode</button>
@@ -72,8 +72,8 @@
         let greens = 0; let fats = 0; let condiments = 0; let fuelings = 0; let water = 0;
         let currentItem = null;
 
+        // Auto-Reset on new day
         window.onload = function() { checkAndResetDate(); };
-
         function checkAndResetDate() {
             const lastDate = localStorage.getItem('lastDate');
             const today = new Date().toDateString();
@@ -106,6 +106,7 @@
             document.getElementById('waterBar').style.width = Math.min(percent, 100) + "%";
         }
 
+        // Live API Search
         async function searchFood(byName) {
             const query = document.getElementById('searchInput').value;
             const resultDisplay = document.getElementById('searchResult');
@@ -141,6 +142,7 @@
             }
         }
 
+        // Optavia Logic Engine
         function analyzeProduct(product) {
             const nutriments = product.nutriments;
             const protein = nutriments['proteins_serving'] || 0;
@@ -150,7 +152,6 @@
             const netCarbs = carbs - fiber;
 
             if (protein > 15) {
-                // Determine Lean Level
                 let level = "Moderately Lean (5oz)";
                 if (fat < 5) level = "Leanest (7oz)";
                 else if (fat < 10) level = "Lean (6oz)";
