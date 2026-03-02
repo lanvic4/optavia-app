@@ -3,71 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optavia 5&1 Meal Builder</title>
+    <title>Optavia 5&1 Daily Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .optavia-green { background-color: #2D5A27; }
         .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
+<body class="bg-gray-50 min-h-screen font-sans pb-10">
 
     <nav class="optavia-green p-4 text-white text-center shadow-lg">
-        <h1 class="text-xl font-bold">5&1 Lean & Green Builder</h1>
-        <p class="text-xs opacity-80">Official Guidelines Logic Applied</p>
+        <h1 class="text-xl font-bold">5&1 Daily Dashboard</h1>
     </nav>
 
-    <div class="max-w-md mx-auto p-4">
+    <div class="max-w-md mx-auto p-4 space-y-4">
         
-        <div class="card bg-white p-6 mb-4">
-            <h2 class="font-bold text-gray-700 mb-3">1. Select Your Protein</h2>
-            <select id="leanType" onchange="updateRequirements()" class="w-full border p-3 rounded-lg bg-gray-50">
-                <option value="">-- Choose Protein Type --</option>
-                <option value="leanest">Leanest (7 oz) - e.g. Cod, Shrimp, Egg Whites</option>
-                <option value="lean">Lean (6 oz) - e.g. Salmon, Chicken Breast, Swordfish</option>
-                <option value="moderate">Mod. Lean (5 oz) - e.g. Ground Beef 85%, Lamb</option>
+        <div class="card bg-white p-6">
+            <h2 class="font-bold text-gray-700 mb-3">Daily Fuelings (5 Required)</h2>
+            <div class="flex justify-between items-center">
+                <span id="fuelingCount" class="text-4xl font-bold text-green-700">0</span>
+                <button onclick="logFueling()" class="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold">Log Fueling</button>
+            </div>
+        </div>
+
+        <div class="card bg-white p-6">
+            <h2 class="font-bold text-gray-700 mb-3">Water (64oz Required)</h2>
+            <div class="flex justify-between items-center mb-2">
+                <span id="waterCount" class="text-3xl font-bold text-blue-700">0 oz</span>
+                <button onclick="addWater()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">+8 oz</button>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div id="waterBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="card bg-white p-6">
+            <h2 class="font-bold text-gray-700 mb-1">Lean & Green Builder</h2>
+            <p class="text-xs text-gray-500 mb-3">1 Lean + 3 Greens + Fats</p>
+            
+            <select id="leanType" onchange="updateRequirements()" class="w-full border p-2 rounded-lg bg-gray-50 mb-3 text-sm">
+                <option value="">-- Select Protein Type --</option>
+                <option value="leanest">Leanest (7 oz)</option>
+                <option value="lean">Lean (6 oz)</option>
+                <option value="moderate">Mod. Lean (5 oz)</option>
             </select>
-        </div>
 
-        <div id="requirements" class="card bg-white p-6 mb-4 hidden">
-            <h2 class="font-bold text-gray-700 mb-3">Your Meal Requirements:</h2>
-            <ul class="space-y-2">
-                <li id="leanReq" class="flex items-center text-sm">✅ 1 Lean Serving</li>
-                <li id="greenReq" class="flex items-center text-sm text-red-500">⭕ 3 Green Servings Needed</li>
-                <li id="fatReq" class="flex items-center text-sm">⭕ Healthy Fats Needed</li>
-            </ul>
-        </div>
+            <div id="requirements" class="bg-gray-100 p-3 rounded-lg mb-3 hidden text-sm">
+                <p id="fatReq">⭕ Add Healthy Fats</p>
+                <p id="greenReq">⭕ Add 3 Green Servings</p>
+            </div>
 
-        <div class="card bg-white p-6 mb-4">
-            <h2 class="font-bold text-gray-700 mb-3 text-center">Add to Meal</h2>
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <button onclick="addGreen()" class="bg-green-100 text-green-800 p-4 rounded-lg font-semibold hover:bg-green-200 border border-green-300">+ 1 Green</button>
-                <button onclick="addCondiment()" class="bg-blue-100 text-blue-800 p-4 rounded-lg font-semibold hover:bg-blue-200 border border-blue-300">+ 1 Condiment</button>
+            <div class="grid grid-cols-2 gap-2 mb-3">
+                <button onclick="addGreen()" class="bg-green-100 text-green-800 p-2 rounded-lg text-sm font-semibold border border-green-300">+1 Green</button>
+                <button onclick="addCondiment()" class="bg-blue-100 text-blue-800 p-2 rounded-lg text-sm font-semibold border border-blue-300">+1 Condiment</button>
             </div>
             
-            <input type="text" id="barcodeInput" placeholder="Enter Barcode UPC" class="w-full border p-3 rounded-lg mb-2">
-            <button onclick="scanBarcode()" class="w-full bg-gray-800 text-white p-3 rounded-lg font-bold flex items-center justify-center gap-2">
-                📷 Search Barcode
-            </button>
+            <input type="text" id="barcodeInput" placeholder="UPC Barcode" class="w-full border p-2 rounded-lg mb-2 text-sm">
+            <button onclick="scanBarcode()" class="w-full bg-gray-800 text-white p-2 rounded-lg font-bold text-sm">📷 Scan Item</button>
             <p id="scanResult" class="text-xs text-center mt-2 text-gray-600"></p>
         </div>
 
-        <div class="card bg-green-50 p-6 border-2 border-green-200">
-            <h3 class="text-center font-bold text-green-900">Current Meal Status</h3>
-            <div class="flex justify-around mt-4 text-center">
-                <div><p class="text-xs text-gray-500 uppercase">Greens</p><p id="greenCount" class="text-2xl font-bold">0</p></div>
-                <div><p class="text-xs text-gray-500 uppercase">Fats</p><p id="fatCount" class="text-2xl font-bold">0</p></div>
-                <div><p class="text-xs text-gray-500 uppercase">Condiments</p><p id="condCount" class="text-2xl font-bold">0</p></div>
+        <div class="card bg-green-50 p-4 border border-green-200">
+            <h3 class="text-center font-bold text-green-900">Meal Totals</h3>
+            <div class="flex justify-around mt-2 text-center">
+                <div><p class="text-xs text-gray-500">Greens</p><p id="greenCount" class="text-xl font-bold">0</p></div>
+                <div><p class="text-xs text-gray-500">Fats</p><p id="fatCount" class="text-xl font-bold">0</p></div>
+                <div><p class="text-xs text-gray-500">Cond</p><p id="condCount" class="text-xl font-bold">0</p></div>
             </div>
         </div>
 
     </div>
 
     <script>
-        let greens = 0;
-        let fats = 0;
-        let condiments = 0;
-        let neededFats = 0;
+        let greens = 0; let fats = 0; let condiments = 0; let neededFats = 0;
+        let fuelings = 0; let water = 0;
+
+        function logFueling() {
+            if(fuelings < 5) {
+                fuelings++;
+                document.getElementById('fuelingCount').innerText = fuelings;
+            } else { alert("You've logged all 5 fuelings!"); }
+        }
+
+        function addWater() {
+            water += 8;
+            document.getElementById('waterCount').innerText = water + " oz";
+            let percent = (water / 64) * 100;
+            document.getElementById('waterBar').style.width = Math.min(percent, 100) + "%";
+        }
 
         function updateRequirements() {
             const type = document.getElementById('leanType').value;
@@ -82,14 +105,15 @@
             else { neededFats = 0; }
 
             fatReq.innerText = neededFats > 0 ? `⭕ Add ${neededFats} Healthy Fat(s)` : "✅ No Healthy Fats Required";
-            fatReq.className = neededFats > 0 ? "text-red-500 text-sm" : "text-green-600 text-sm";
+            fatReq.className = neededFats > 0 ? "text-red-700 font-bold" : "text-green-700 font-bold";
         }
 
         function addGreen() {
             if(greens < 3) {
                 greens++;
                 document.getElementById('greenCount').innerText = greens;
-                if(greens === 3) document.getElementById('greenReq').className = "text-green-600 text-sm font-bold";
+                if(greens === 3) document.getElementById('greenReq').innerText = "✅ 3 Greens Added";
+                document.getElementById('greenReq').className = "text-green-700 font-bold";
             }
         }
 
@@ -99,7 +123,6 @@
             if(condiments > 3) alert("Warning: You are over your 3 daily condiments!");
         }
 
-        // New API Logic
         async function scanBarcode() {
             const barcode = document.getElementById('barcodeInput').value;
             const resultDisplay = document.getElementById('scanResult');
