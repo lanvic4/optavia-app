@@ -13,7 +13,7 @@
 <body class="bg-gray-50 min-h-screen font-sans pb-10">
 
     <nav class="optavia-green p-4 text-white text-center shadow-lg">
-        <h1 class="text-xl font-bold">5&1 Daily Dashboard</h1>
+        <h1 class="text-xl font-bold">5&1 Daily Tracker</h1>
     </nav>
 
     <div class="max-w-md mx-auto p-4 space-y-4">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="card bg-white p-6">
-            <h2 class="font-bold text-gray-700 mb-3">Water (64oz Required)</h2>
+            <h2 class="font-bold text-gray-700 mb-3">Water (64 oz Required)</h2>
             <div class="flex justify-between items-center mb-2">
                 <span id="waterCount" class="text-3xl font-bold text-blue-700">0 oz</span>
                 <button onclick="addWater()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">+8 oz</button>
@@ -38,10 +38,10 @@
         </div>
 
         <div class="card bg-white p-6">
-            <h2 class="font-bold text-gray-700 mb-1">Intelligent Item Search</h2>
-            <p class="text-xs text-gray-500 mb-3">Search name or scan barcode.</p>
+            <h2 class="font-bold text-gray-700 mb-1">Search Food</h2>
+            <p class="text-xs text-gray-500 mb-3">Scan barcode or type name of food.</p>
             
-            <input type="text" id="searchInput" placeholder="Salmon, Broccoli, Olive Oil..." class="w-full border p-2 rounded-lg mb-2 text-sm">
+            <input type="text" id="searchInput" placeholder="Search item..." class="w-full border p-2 rounded-lg mb-2 text-sm">
             
             <div class="grid grid-cols-2 gap-2 mb-3">
                 <button onclick="searchFood(false)" class="bg-gray-800 text-white p-2 rounded-lg font-bold text-sm">📷 Scan Barcode</button>
@@ -72,8 +72,8 @@
         let greens = 0; let fats = 0; let condiments = 0; let fuelings = 0; let water = 0;
         let currentItem = null;
 
-        // Auto-Reset on new day
         window.onload = function() { checkAndResetDate(); };
+
         function checkAndResetDate() {
             const lastDate = localStorage.getItem('lastDate');
             const today = new Date().toDateString();
@@ -81,7 +81,7 @@
         }
 
         function resetApp(manual = true) {
-            if(manual && !confirm("Are you sure?")) return;
+            if(manual && !confirm("Are you sure you want to reset the day?")) return;
             greens = 0; fats = 0; condiments = 0; fuelings = 0; water = 0;
             document.getElementById('fuelingCount').innerText = 0;
             document.getElementById('waterCount').innerText = "0 oz";
@@ -96,7 +96,7 @@
             if(fuelings < 5) {
                 fuelings++;
                 document.getElementById('fuelingCount').innerText = fuelings;
-            } else { alert("5 Fuelings reached!"); }
+            } else { alert("You have logged all 5 fuelings!"); }
         }
 
         function addWater() {
@@ -106,7 +106,6 @@
             document.getElementById('waterBar').style.width = Math.min(percent, 100) + "%";
         }
 
-        // Live API Search
         async function searchFood(byName) {
             const query = document.getElementById('searchInput').value;
             const resultDisplay = document.getElementById('searchResult');
@@ -115,7 +114,7 @@
             const resInst = document.getElementById('resultInstructions');
             
             resultDisplay.classList.remove('hidden');
-            resName.innerText = "Searching...";
+            resName.innerText = "Searching database...";
             resCat.innerText = "";
             resInst.innerText = "";
 
@@ -135,14 +134,13 @@
                     resCat.innerText = currentItem.type;
                     resInst.innerText = currentItem.message;
                 } else {
-                    resName.innerText = "Product not found.";
+                    resName.innerText = "Product not found. Please try again.";
                 }
             } catch (error) {
                 resName.innerText = "Error fetching data.";
             }
         }
 
-        // Optavia Logic Engine
         function analyzeProduct(product) {
             const nutriments = product.nutriments;
             const protein = nutriments['proteins_serving'] || 0;
@@ -152,18 +150,19 @@
             const netCarbs = carbs - fiber;
 
             if (protein > 15) {
-                let level = "Moderately Lean (5oz)";
-                if (fat < 5) level = "Leanest (7oz)";
-                else if (fat < 10) level = "Lean (6oz)";
-                return { type: "Protein", message: `This is a ${level} protein.` };
+                // Determine Lean Level
+                let level = "Moderately Lean (5 oz)";
+                if (fat < 5) level = "Leanest (7 oz)";
+                else if (fat < 10) level = "Lean (6 oz)";
+                return { type: "Protein", message: `This is a ${level} protein. Please weigh before cooking.` };
             } else if (netCarbs < 5 && fat < 2) {
-                return { type: "Green Vegetable", message: "Counts as 1 Green Serving." };
+                return { type: "Green Vegetable", message: "1 serving is approx. 1 cup raw or 1/2 cup cooked." };
             } else if (fat > 4 && netCarbs < 2) {
-                return { type: "Healthy Fat", message: "Counts as 1 Healthy Fat." };
+                return { type: "Healthy Fat", message: "1 serving is approx. 1 tablespoon of oil or 1.5 oz of avocado." };
             } else if (netCarbs < 1 && fat < 0.5) {
-                return { type: "Condiment", message: "Counts as 1 Condiment." };
+                return { type: "Condiment", message: "1 serving is usually 1-2 tablespoons." };
             } else {
-                return { type: "Off-Plan", message: "High in carbs or fat." };
+                return { type: "Off-Plan", message: "This item is high in carbs or fat and not recommended." };
             }
         }
 
@@ -171,13 +170,13 @@
             if (!currentItem) return;
             if (currentItem.type === "Green Vegetable") {
                 if(greens < 3) { greens++; document.getElementById('greenCount').innerText = greens; }
-                else { alert("3 Greens already logged!"); }
+                else { alert("You have already logged 3 Greens!"); }
             } else if (currentItem.type === "Healthy Fat") {
                 fats++; document.getElementById('fatCount').innerText = fats;
             } else if (currentItem.type === "Condiment") {
                 condiments++; document.getElementById('condCount').innerText = condiments;
             } else if (currentItem.type === "Protein") {
-                alert("Log protein by weight, not scan!");
+                alert("Please log protein based on weight, not by scanning!");
             }
             document.getElementById('searchResult').classList.add('hidden');
         }
