@@ -49,8 +49,8 @@
             </select>
 
             <div id="requirements" class="bg-gray-100 p-3 rounded-lg mb-3 hidden text-sm">
-                <p id="fatReq">⭕ Add Healthy Fats</p>
-                <p id="greenReq">⭕ Add 3 Green Servings</p>
+                <p id="fatReq" class="text-gray-700">⭕ Add Healthy Fats</p>
+                <p id="greenReq" class="text-gray-700">⭕ Add 3 Green Servings</p>
             </div>
 
             <div class="grid grid-cols-2 gap-2 mb-3">
@@ -65,11 +65,12 @@
 
         <div class="card bg-green-50 p-4 border border-green-200">
             <h3 class="text-center font-bold text-green-900">Meal Totals</h3>
-            <div class="flex justify-around mt-2 text-center">
+            <div class="flex justify-around mt-2 text-center mb-4">
                 <div><p class="text-xs text-gray-500">Greens</p><p id="greenCount" class="text-xl font-bold">0</p></div>
                 <div><p class="text-xs text-gray-500">Fats</p><p id="fatCount" class="text-xl font-bold">0</p></div>
                 <div><p class="text-xs text-gray-500">Cond</p><p id="condCount" class="text-xl font-bold">0</p></div>
             </div>
+            <button onclick="resetApp()" class="w-full bg-red-100 text-red-700 p-2 rounded-lg font-bold text-sm border border-red-300">Reset Day</button>
         </div>
 
     </div>
@@ -77,6 +78,37 @@
     <script>
         let greens = 0; let fats = 0; let condiments = 0; let neededFats = 0;
         let fuelings = 0; let water = 0;
+        
+        // Load data on startup
+        window.onload = function() {
+            checkAndResetDate();
+        };
+
+        function checkAndResetDate() {
+            const lastDate = localStorage.getItem('lastDate');
+            const today = new Date().toDateString();
+
+            if (lastDate !== today) {
+                resetApp(false);
+                localStorage.setItem('lastDate', today);
+            }
+        }
+
+        function resetApp(manual = true) {
+            if(manual && !confirm("Are you sure you want to reset the day?")) return;
+            
+            greens = 0; fats = 0; condiments = 0; fuelings = 0; water = 0;
+            document.getElementById('fuelingCount').innerText = 0;
+            document.getElementById('waterCount').innerText = "0 oz";
+            document.getElementById('waterBar').style.width = "0%";
+            document.getElementById('greenCount').innerText = 0;
+            document.getElementById('fatCount').innerText = 0;
+            document.getElementById('condCount').innerText = 0;
+            document.getElementById('leanType').value = "";
+            document.getElementById('requirements').classList.add('hidden');
+            document.getElementById('scanResult').innerText = "";
+            document.getElementById('barcodeInput').value = "";
+        }
 
         function logFueling() {
             if(fuelings < 5) {
@@ -96,6 +128,7 @@
             const type = document.getElementById('leanType').value;
             const reqBox = document.getElementById('requirements');
             const fatReq = document.getElementById('fatReq');
+            const greenReq = document.getElementById('greenReq');
             
             if(type === "") { reqBox.classList.add('hidden'); return; }
             reqBox.classList.remove('hidden');
@@ -106,14 +139,21 @@
 
             fatReq.innerText = neededFats > 0 ? `⭕ Add ${neededFats} Healthy Fat(s)` : "✅ No Healthy Fats Required";
             fatReq.className = neededFats > 0 ? "text-red-700 font-bold" : "text-green-700 font-bold";
+            
+            // Reset Green requirements display
+            greenReq.innerText = "⭕ Add 3 Green Servings";
+            greenReq.className = "text-gray-700";
         }
 
         function addGreen() {
             if(greens < 3) {
                 greens++;
                 document.getElementById('greenCount').innerText = greens;
-                if(greens === 3) document.getElementById('greenReq').innerText = "✅ 3 Greens Added";
-                document.getElementById('greenReq').className = "text-green-700 font-bold";
+                if(greens === 3) {
+                    const greenReq = document.getElementById('greenReq');
+                    greenReq.innerText = "✅ 3 Greens Added";
+                    greenReq.className = "text-green-700 font-bold";
+                }
             }
         }
 
@@ -126,6 +166,7 @@
         async function scanBarcode() {
             const barcode = document.getElementById('barcodeInput').value;
             const resultDisplay = document.getElementById('scanResult');
+            if(!barcode) { resultDisplay.innerText = "Please enter a barcode."; return; }
             resultDisplay.innerText = "Searching...";
 
             try {
@@ -134,6 +175,7 @@
 
                 if (data.status === 1) {
                     const product = data.product;
+                    // API data is often per 100g, but we want per serving if available
                     const carbs = product.nutriments['carbohydrates_serving'] || 0;
                     const fat = product.nutriments['fat_serving'] || 0;
                     
