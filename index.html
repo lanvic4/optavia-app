@@ -39,16 +39,13 @@
 
         <div class="card bg-white p-6">
             <h2 class="font-bold text-gray-700 mb-1">Search Food</h2>
-            <p class="text-xs text-gray-500 mb-3">Scan barcode or type name of food.</p>
+            <p class="text-xs text-gray-500 mb-3">Type name to get exact Optavia serving size.</p>
             
-            <input type="text" id="searchInput" placeholder="Search item..." class="w-full border p-2 rounded-lg mb-2 text-sm">
+            <input type="text" id="searchInput" placeholder="Search (e.g. Salmon)..." class="w-full border p-2 rounded-lg mb-2 text-sm">
             
-            <div class="grid grid-cols-2 gap-2 mb-3">
-                <button onclick="searchFood(false)" class="bg-gray-800 text-white p-2 rounded-lg font-bold text-sm">📷 Scan Barcode</button>
-                <button onclick="searchFood(true)" class="bg-gray-200 text-gray-800 p-2 rounded-lg font-bold text-sm">🔍 Search Name</button>
-            </div>
+            <button onclick="searchFoodDatabase()" class="w-full bg-gray-800 text-white p-2 rounded-lg font-bold text-sm">🔍 Search Database</button>
             
-            <div id="searchResult" class="bg-gray-100 p-3 rounded-lg text-sm hidden">
+            <div id="searchResult" class="bg-gray-100 p-3 rounded-lg text-sm hidden mt-3">
                 <p id="resultName" class="font-bold"></p>
                 <p id="resultCategory" class="text-green-700"></p>
                 <p id="resultInstructions" class="text-gray-600 mb-2"></p>
@@ -72,6 +69,48 @@
         let greens = 0; let fats = 0; let condiments = 0; let fuelings = 0; let water = 0;
         let currentItem = null;
 
+        // Expanded Hardcoded Optavia Database
+        const optaviaDB = {
+            // --- PROTEINS (Leanest 7oz, Lean 6oz, Moderate 5oz) ---
+            "cod": { type: "Protein", serving: "7 oz (raw weight)" },
+            "shrimp": { type: "Protein", serving: "7 oz (raw weight)" },
+            "egg whites": { type: "Protein", serving: "1.5 cups" },
+            "chicken breast": { type: "Protein", serving: "6 oz (raw weight)" },
+            "salmon": { type: "Protein", serving: "6 oz (raw weight)" },
+            "swordfish": { type: "Protein", serving: "6 oz (raw weight)" },
+            "ground turkey 93%": { type: "Protein", serving: "6 oz (raw weight)" },
+            "ground beef 85%": { type: "Protein", serving: "5 oz (raw weight)" },
+            "lamb": { type: "Protein", serving: "5 oz (raw weight)" },
+            "pork chop": { type: "Protein", serving: "5 oz (raw weight)" },
+
+            // --- GREENS (3 Servings needed for a meal) ---
+            "spinach": { type: "Green Vegetable", serving: "2 cups (raw)" },
+            "lettuce": { type: "Green Vegetable", serving: "2 cups (raw)" },
+            "broccoli": { type: "Green Vegetable", serving: "1 cup (raw)" },
+            "zucchini": { type: "Green Vegetable", serving: "1 cup (raw)" },
+            "cauliflower": { type: "Green Vegetable", serving: "1 cup (raw)" },
+            "asparagus": { type: "Green Vegetable", serving: "1 cup (raw)" },
+            "green beans": { type: "Green Vegetable", serving: "1 cup (raw)" },
+            "bell peppers": { type: "Green Vegetable", serving: "1/2 cup (raw)" },
+            "tomatoes": { type: "Green Vegetable", serving: "1/2 cup (raw)" },
+
+            // --- HEALTHY FATS ---
+            "olive oil": { type: "Healthy Fat", serving: "1 teaspoon" },
+            "butter": { type: "Healthy Fat", serving: "1 teaspoon" },
+            "avocado": { type: "Healthy Fat", serving: "1.5 ounces" },
+            "almonds": { type: "Healthy Fat", serving: "10 whole" },
+            "walnuts": { type: "Healthy Fat", serving: "7 halves" },
+            "olives": { type: "Healthy Fat", serving: "5 large" },
+
+            // --- CONDIMENTS ---
+            "mustard": { type: "Condiment", serving: "2 tablespoons" },
+            "soy sauce": { type: "Condiment", serving: "1 tablespoon" },
+            "hot sauce": { type: "Condiment", serving: "1 tablespoon" },
+            "vinegar": { type: "Condiment", serving: "2 tablespoons" },
+            "lemon juice": { type: "Condiment", serving: "2 tablespoons" },
+            "garlic": { type: "Condiment", serving: "1 clove" }
+        };
+
         window.onload = function() { checkAndResetDate(); };
 
         function checkAndResetDate() {
@@ -90,6 +129,7 @@
             document.getElementById('fatCount').innerText = 0;
             document.getElementById('condCount').innerText = 0;
             document.getElementById('searchResult').classList.add('hidden');
+            document.getElementById('searchInput').value = "";
         }
 
         function logFueling() {
@@ -106,63 +146,25 @@
             document.getElementById('waterBar').style.width = Math.min(percent, 100) + "%";
         }
 
-        async function searchFood(byName) {
-            const query = document.getElementById('searchInput').value;
+        function searchFoodDatabase() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
             const resultDisplay = document.getElementById('searchResult');
             const resName = document.getElementById('resultName');
             const resCat = document.getElementById('resultCategory');
             const resInst = document.getElementById('resultInstructions');
             
             resultDisplay.classList.remove('hidden');
-            resName.innerText = "Searching database...";
-            resCat.innerText = "";
-            resInst.innerText = "";
-
-            try {
-                let url = byName 
-                    ? `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${query}&search_simple=1&action=process&json=1`
-                    : `https://world.openfoodfacts.org/api/v0/product/${query}.json`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                const product = byName ? data.products[0] : data.product;
-
-                if (product) {
-                    currentItem = analyzeProduct(product);
-                    resName.innerText = product.product_name;
-                    resCat.innerText = currentItem.type;
-                    resInst.innerText = currentItem.message;
-                } else {
-                    resName.innerText = "Product not found. Please try again.";
-                }
-            } catch (error) {
-                resName.innerText = "Error fetching data.";
-            }
-        }
-
-        function analyzeProduct(product) {
-            const nutriments = product.nutriments;
-            const protein = nutriments['proteins_serving'] || 0;
-            const fat = nutriments['fat_serving'] || 0;
-            const carbs = nutriments['carbohydrates_serving'] || 0;
-            const fiber = nutriments['fiber_serving'] || 0;
-            const netCarbs = carbs - fiber;
-
-            if (protein > 15) {
-                // Determine Lean Level
-                let level = "Moderately Lean (5 oz)";
-                if (fat < 5) level = "Leanest (7 oz)";
-                else if (fat < 10) level = "Lean (6 oz)";
-                return { type: "Protein", message: `This is a ${level} protein. Please weigh before cooking.` };
-            } else if (netCarbs < 5 && fat < 2) {
-                return { type: "Green Vegetable", message: "1 serving is approx. 1 cup raw or 1/2 cup cooked." };
-            } else if (fat > 4 && netCarbs < 2) {
-                return { type: "Healthy Fat", message: "1 serving is approx. 1 tablespoon of oil or 1.5 oz of avocado." };
-            } else if (netCarbs < 1 && fat < 0.5) {
-                return { type: "Condiment", message: "1 serving is usually 1-2 tablespoons." };
+            
+            if (optaviaDB[query]) {
+                currentItem = optaviaDB[query];
+                resName.innerText = query.toUpperCase();
+                resCat.innerText = currentItem.type;
+                resInst.innerText = `1 serving is ${currentItem.serving}.`;
             } else {
-                return { type: "Off-Plan", message: "This item is high in carbs or fat and not recommended." };
+                resName.innerText = "Item not found in Optavia guide.";
+                resCat.innerText = "";
+                resInst.innerText = "Please check spelling (e.g., 'chicken breast').";
+                currentItem = null;
             }
         }
 
@@ -176,9 +178,10 @@
             } else if (currentItem.type === "Condiment") {
                 condiments++; document.getElementById('condCount').innerText = condiments;
             } else if (currentItem.type === "Protein") {
-                alert("Please log protein based on weight, not by scanning!");
+                alert("Log protein by its specified raw weight.");
             }
             document.getElementById('searchResult').classList.add('hidden');
+            document.getElementById('searchInput').value = "";
         }
     </script>
 </body>
