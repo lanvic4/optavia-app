@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optavia Precision Tracker</title>
+    <title>Optavia 5&1 Precision Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .optavia-green { background-color: #2D5A27; }
         .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .search-btn { background-color: #2563eb !important; transition: all 0.2s; }
-        .search-btn:active { transform: scale(0.95); background-color: #1d4ed8 !important; }
+        .search-btn { background-color: #2563eb !important; }
         .leanest-tag { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .leaner-tag { background-color: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
         .lean-tag { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
@@ -43,11 +42,16 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">2. Food Name</label>
-                    <input type="text" id="searchInput" placeholder="Type here (e.g. Chicken, Salmon, Beef)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
+                    <input type="text" id="searchInput" placeholder="Search (e.g. Chicken, Beef, Cod)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
                     <button onclick="executeSearch()" class="w-full search-btn text-white py-4 rounded-xl font-black text-lg shadow-lg uppercase tracking-widest">
                         🔍 Click to Search
                     </button>
                 </div>
+            </div>
+
+            <div id="choiceContainer" class="hidden mt-4 space-y-2">
+                <p class="text-xs font-bold text-gray-500 uppercase">Select specific type:</p>
+                <div id="choiceButtons" class="flex flex-wrap gap-2"></div>
             </div>
 
             <div id="searchResult" class="hidden mt-6 animate-in slide-in-from-top duration-300">
@@ -69,10 +73,7 @@
                     </div>
 
                     <p id="resNote" class="text-[11px] text-gray-600 mb-4 italic leading-tight"></p>
-
-                    <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">
-                        ✅ Add to Daily Log
-                    </button>
+                    <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">✅ Add to Daily Log</button>
                 </div>
             </div>
         </div>
@@ -80,20 +81,13 @@
 
     <script>
         const db = {
-            // PROTEINS
-            "chicken breast": { type: "Protein", sub: "Leaner", fatReq: "1 Serving", cooked: {w: "6 oz"}, raw: {w: "approx 8 oz"}, note: "Skinless, boneless." },
-            "chicken thigh": { type: "Protein", sub: "Lean", fatReq: "0 Servings", cooked: {w: "5 oz"}, raw: {w: "approx 7 oz"}, note: "Skinless." },
-            "cod": { type: "Protein", sub: "Leanest", fatReq: "2 Servings", cooked: {w: "7 oz"}, raw: {w: "approx 9 oz"}, note: "White fish, very low fat." },
-            "shrimp": { type: "Protein", sub: "Leanest", fatReq: "2 Servings", cooked: {w: "7 oz"}, raw: {w: "approx 9 oz"}, note: "Steamed or grilled." },
-            "salmon": { type: "Protein", sub: "Lean", fatReq: "0 Servings", cooked: {w: "5 oz"}, raw: {w: "approx 7 oz"}, note: "High in natural healthy fats." },
-            "ground turkey 93%": { type: "Protein", sub: "Leaner", fatReq: "1 Serving", cooked: {w: "6 oz"}, raw: {w: "approx 8 oz"} },
-            "ground beef 85-94%": { type: "Protein", sub: "Lean", fatReq: "0 Servings", cooked: {w: "5 oz"}, raw: {w: "approx 7 oz"} },
-            "egg whites": { type: "Protein", sub: "Leanest", fatReq: "2 Servings", cooked: {w: "2 cups (15 large)"}, note: "Liquid or fresh." },
-            
-            // GREENS/FATS/CONDIMENTS
-            "bell pepper": { type: "Green", cooked: {w: "2.40 oz"}, raw: {w: "2.63 oz"}, note: "1 Green serving." },
-            "olive oil": { type: "Fat", any: {w: "1 tsp (4.5g)"}, note: "1 Healthy Fat serving." },
-            "cilantro": { type: "Condiment", any: {w: "1 Tbsp fresh"}, note: "1 Condiment serving." }
+            "chicken breast": { type: "Protein", sub: "Leaner", fatReq: "1 Serving", cooked: {w: "6 oz"}, raw: {w: "8 oz"}, note: "White meat, skinless." },
+            "chicken (white meat)": { type: "Protein", sub: "Leaner", fatReq: "1 Serving", cooked: {w: "6 oz"}, raw: {w: "8 oz"}, note: "Skinless breast or white meat." },
+            "chicken (dark meat)": { type: "Protein", sub: "Lean", fatReq: "0 Servings", cooked: {w: "5 oz"}, raw: {w: "7 oz"}, note: "Thigh/Leg, skinless." },
+            "cod": { type: "Protein", sub: "Leanest", fatReq: "2 Servings", cooked: {w: "7 oz"}, raw: {w: "9 oz"}, note: "Very low fat white fish." },
+            "salmon": { type: "Protein", sub: "Lean", fatReq: "0 Servings", cooked: {w: "5 oz"}, raw: {w: "7 oz"}, note: "Naturally fatty fish." },
+            "ground turkey 93%": { type: "Protein", sub: "Leaner", fatReq: "1 Serving", cooked: {w: "6 oz"}, raw: {w: "8 oz"} },
+            "egg whites": { type: "Protein", sub: "Leanest", fatReq: "2 Servings", cooked: {w: "2 cups"}, note: "Leanest category." }
         };
 
         let totals = { Green: 0, Fat: 0, Condiment: 0 };
@@ -101,42 +95,55 @@
 
         function executeSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const choiceBox = document.getElementById('choiceContainer');
+            const choiceBtnArea = document.getElementById('choiceButtons');
+            const resBox = document.getElementById('searchResult');
+            
+            resBox.classList.add('hidden');
+            choiceBox.classList.add('hidden');
+            choiceBtnArea.innerHTML = "";
+
+            if (!query) return;
+
+            // Find all matches (to handle White vs Dark chicken)
+            const matches = Object.keys(db).filter(key => key.includes(query));
+
+            if (matches.length > 1) {
+                choiceBox.classList.remove('hidden');
+                matches.forEach(match => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-xs font-bold border border-blue-200";
+                    btn.innerText = match.toUpperCase();
+                    btn.onclick = () => showFinalResult(match);
+                    choiceBtnArea.appendChild(btn);
+                });
+            } else if (matches.length === 1) {
+                showFinalResult(matches[0]);
+            } else {
+                alert("Food not found. Try 'Chicken'.");
+            }
+        }
+
+        function showFinalResult(key) {
+            currentItem = db[key];
             const state = document.getElementById('foodState').value;
             const resBox = document.getElementById('searchResult');
             const resCont = document.getElementById('resultContainer');
+            const data = currentItem[state] || currentItem.any || currentItem.raw;
             
-            if (!query) return;
-
-            const matchKey = Object.keys(db).find(key => key.includes(query) || query.includes(key));
+            document.getElementById('resultName').innerText = key;
+            document.getElementById('resWeight').innerText = data.w;
+            document.getElementById('resFats').innerText = currentItem.fatReq;
+            document.getElementById('resNote').innerText = currentItem.note || "";
             
-            if (matchKey) {
-                currentItem = db[matchKey];
-                const data = currentItem[state] || currentItem.any || currentItem.raw;
-                
-                document.getElementById('resultName').innerText = matchKey;
-                document.getElementById('resWeight').innerText = data.w;
-                document.getElementById('resNote').innerText = currentItem.note || "";
-                
-                const pTag = document.getElementById('proteinTag');
-                const fatDisplay = document.getElementById('resFats');
-
-                if (currentItem.type === "Protein") {
-                    pTag.innerText = currentItem.sub + " Protein";
-                    pTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block " + 
-                        (currentItem.sub === 'Leanest' ? 'leanest-tag' : currentItem.sub === 'Leaner' ? 'leaner-tag' : 'lean-tag');
-                    fatDisplay.innerText = currentItem.fatReq;
-                    resCont.className = "p-5 rounded-xl border-2 border-blue-200 bg-blue-50";
-                } else {
-                    pTag.innerText = currentItem.type;
-                    pTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block bg-white border";
-                    fatDisplay.innerText = "N/A";
-                    resCont.className = "p-5 rounded-xl border-2 border-green-200 bg-green-50";
-                }
-
-                resBox.classList.remove('hidden');
-            } else {
-                alert("Item not found. Try 'Chicken Breast' or 'Salmon'.");
-            }
+            const pTag = document.getElementById('proteinTag');
+            pTag.innerText = currentItem.sub + " Protein";
+            pTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block " + 
+                (currentItem.sub === 'Leanest' ? 'leanest-tag' : currentItem.sub === 'Leaner' ? 'leaner-tag' : 'lean-tag');
+            
+            resCont.className = "p-5 rounded-xl border-2 border-blue-200 bg-blue-50";
+            resBox.classList.remove('hidden');
+            document.getElementById('choiceContainer').classList.add('hidden');
         }
 
         function logSearchResult() {
@@ -145,7 +152,7 @@
                 totals[currentItem.type]++;
                 updateUI();
             } else {
-                alert(currentItem.sub + " protein logged. Remember to add " + currentItem.fatReq + " to your meal!");
+                alert(currentItem.sub + " logged. Add " + currentItem.fatReq + " healthy fat(s) to this meal!");
             }
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('searchInput').value = "";
