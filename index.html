@@ -10,7 +10,8 @@
         .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .search-btn { background-color: #2563eb !important; transition: all 0.2s; }
         .search-btn:active { transform: scale(0.95); }
-        .leaner-tag { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .leanest-tag { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .leaner-tag { background-color: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
         .lean-tag { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
         .fat-tag { background-color: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
         .condiment-tag { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
@@ -36,7 +37,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search Food Database</label>
-                    <input type="text" id="searchInput" placeholder="Search (Chicken, Broccoli, Spinach...)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
+                    <input type="text" id="searchInput" placeholder="Search (e.g. Chicken, Shrimp, Avocado)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
                     <button onclick="executeSearch()" class="w-full search-btn text-white py-4 rounded-xl font-black text-lg shadow-lg uppercase tracking-widest">
                         🔍 Search
                     </button>
@@ -65,7 +66,7 @@
                             <p id="resFats" class="text-md font-bold text-blue-700"></p>
                         </div>
                     </div>
-                    <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">✅ Add to Today</button>
+                    <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">✅ Add to Log</button>
                 </div>
             </div>
         </div>
@@ -73,30 +74,39 @@
 
     <script>
         const db = [
-            // CHICKEN (Cooked Only)
-            { name: "Chicken - White Meat", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["chicken", "breast"] },
-            { name: "Chicken - Dark Meat", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["chicken", "thigh", "leg"] },
-            
-            // OTHER PROTEINS (Cooked Only)
-            { name: "Turkey Breast", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["turkey"] },
-            { name: "Steak (Lean Cut)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["steak", "beef"] },
+            // LEANEST PROTEINS (7 oz Cooked + 2 Fats)
+            { name: "Cod, Flounder, Tilapia (Cooked)", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["fish", "cod", "flounder", "tilapia"] },
+            { name: "Shrimp, Scallops, Crab (Cooked)", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["shrimp", "seafood", "scallops", "crab"] },
+            { name: "Egg Whites (Liquid)", type: "Protein", sub: "Leanest", weight: "2 Cups", fat: "2 Servings", tags: ["egg", "whites"] },
+            { name: "Turkey Breast (Cooked)", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["turkey", "breast"] },
 
-            // MILK USAGE
-            { name: "Milk - Almond (As 1 Healthy Fat)", type: "Fat", weight: "2 Cups", fat: "1", tags: ["milk", "almond"] },
-            { name: "Milk - Almond (As 1 Condiment)", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "almond"] },
+            // LEANER PROTEINS (6 oz Cooked + 1 Fat)
+            { name: "Chicken Breast (Cooked)", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["chicken", "breast"] },
+            { name: "Salmon, Swordfish, Tuna (Cooked)", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["salmon", "tuna", "swordfish"] },
+            { name: "Ground Turkey (95%-98% Lean)", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["turkey", "ground"] },
 
-            // BROCCOLI (States)
-            { name: "Broccoli (Raw)", type: "Green", weight: "2.50 oz (1 cup)", fat: "N/A", tags: ["broccoli"] },
-            { name: "Broccoli (Cooked)", type: "Green", weight: "2.75 oz (1/2 cup)", fat: "N/A", tags: ["broccoli"] },
-            { name: "Broccoli (Frozen)", type: "Green", weight: "3.25 oz (1/2 cup)", fat: "N/A", tags: ["broccoli"] },
+            // LEAN PROTEINS (5 oz Cooked + 0 Fats)
+            { name: "Beef: Sirloin, Steak, Roast (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["beef", "steak", "sirloin", "roast"] },
+            { name: "Chicken Thigh or Drumstick (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["chicken", "thigh", "dark meat"] },
+            { name: "Pork Tenderloin (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["pork", "tenderloin"] },
+            { name: "Whole Eggs", type: "Protein", sub: "Lean", weight: "3 Eggs", fat: "0 Servings", tags: ["egg", "whole"] },
 
-            // SPINACH (States)
-            { name: "Spinach (Raw)", type: "Green", weight: "1.06 oz (1 cup)", fat: "N/A", tags: ["spinach"] },
-            { name: "Spinach (Cooked)", type: "Green", weight: "2.75 oz (1/2 cup)", fat: "N/A", tags: ["spinach"] },
+            // GREENS (Vegetables)
+            { name: "Asparagus (Cooked)", type: "Green", weight: "1/2 Cup (3.17 oz)", fat: "N/A", tags: ["asparagus"] },
+            { name: "Broccoli (Cooked)", type: "Green", weight: "1/2 Cup (2.75 oz)", fat: "N/A", tags: ["broccoli"] },
+            { name: "Broccoli (Raw)", type: "Green", weight: "1 Cup (2.50 oz)", fat: "N/A", tags: ["broccoli"] },
+            { name: "Cauliflower (Cooked)", type: "Green", weight: "1/2 Cup (3.17 oz)", fat: "N/A", tags: ["cauliflower"] },
+            { name: "Spinach (Cooked)", type: "Green", weight: "1/2 Cup (3.17 oz)", fat: "N/A", tags: ["spinach"] },
+            { name: "Spinach (Raw)", type: "Green", weight: "1 Cup (1.06 oz)", fat: "N/A", tags: ["spinach"] },
+            { name: "Zucchini (Cooked)", type: "Green", weight: "1/2 Cup (3.17 oz)", fat: "N/A", tags: ["zucchini"] },
 
-            // ASPARAGUS (States)
-            { name: "Asparagus (Raw)", type: "Green", weight: "2.36 oz (1/2 cup)", fat: "N/A", tags: ["asparagus"] },
-            { name: "Asparagus (Cooked)", type: "Green", weight: "3.17 oz (1/2 cup)", fat: "N/A", tags: ["asparagus"] }
+            // HEALTHY FATS & CONDIMENTS
+            { name: "Avocado", type: "Fat", weight: "1.5 oz (approx 1/4 med)", fat: "1", tags: ["avocado"] },
+            { name: "Almond Milk - Unsweetened (As 1 Healthy Fat)", type: "Fat", weight: "2 Cups", fat: "1", tags: ["milk", "almond"] },
+            { name: "Almond Milk - Unsweetened (As 1 Condiment)", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "almond"] },
+            { name: "Oil (Olive, Avocado, Canola)", type: "Fat", weight: "1 tsp", fat: "1", tags: ["oil", "olive", "avocado"] },
+            { name: "Salad Dressing (Light/Reduced Fat)", type: "Condiment", weight: "1 Tbsp", fat: "N/A", tags: ["dressing", "salad"] },
+            { name: "Mayo (Light)", type: "Condiment", weight: "1 tsp", fat: "N/A", tags: ["mayo", "mayonnaise"] }
         ];
 
         let totals = { Green: 0, Fat: 0, Condiment: 0 };
@@ -126,7 +136,7 @@
                     choiceBtnArea.appendChild(btn);
                 });
             } else {
-                alert("Food not found in database.");
+                alert("Food not found. Try keywords like 'Fish', 'Beef', or 'Zucchini'.");
             }
         }
 
@@ -141,7 +151,8 @@
 
             if (item.type === "Protein") {
                 tTag.innerText = item.sub + " Protein";
-                tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block leaner-tag";
+                tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block " + 
+                    (item.sub === 'Leanest' ? 'leanest-tag' : item.sub === 'Leaner' ? 'leaner-tag' : 'lean-tag');
                 resCont.className = "p-5 rounded-xl border-2 border-blue-200 bg-blue-50";
             } else if (item.type === "Fat") {
                 tTag.innerText = "HEALTHY FAT";
@@ -163,7 +174,7 @@
 
         function logSearchResult() {
             if (currentItem.type === "Protein") {
-                alert("Logged! Add " + currentItem.fat + " healthy fats.");
+                alert("Logged! For this " + currentItem.sub + " protein, add " + currentItem.fat + " healthy fats to your meal.");
             } else {
                 totals[currentItem.type]++;
                 updateUI();
