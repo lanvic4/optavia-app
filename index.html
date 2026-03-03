@@ -13,6 +13,8 @@
         .leanest-tag { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .leaner-tag { background-color: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
         .lean-tag { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+        .condiment-tag { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .fat-tag { background-color: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans pb-24">
@@ -35,7 +37,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Food Name</label>
-                    <input type="text" id="searchInput" placeholder="Search (e.g. Chicken, Broccoli, Cilantro)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
+                    <input type="text" id="searchInput" placeholder="Try 'Milk', 'Chicken', or 'Broccoli'" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
                     <button onclick="executeSearch()" class="w-full search-btn text-white py-4 rounded-xl font-black text-lg shadow-lg uppercase tracking-widest">
                         🔍 Find Item
                     </button>
@@ -44,12 +46,12 @@
                 <div id="prepArea" class="hidden animate-in fade-in">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Preparation Method</label>
                     <select id="foodState" class="w-full border-2 border-gray-200 p-3 rounded-lg bg-gray-50 text-sm font-bold outline-none focus:border-blue-500">
-                        </select>
+                    </select>
                 </div>
             </div>
 
             <div id="choiceContainer" class="hidden mt-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
-                <p class="text-xs font-bold text-blue-800 uppercase mb-2 text-center">Specific Type Required:</p>
+                <p id="choiceTitle" class="text-xs font-bold text-blue-800 uppercase mb-2 text-center"></p>
                 <div id="choiceButtons" class="flex flex-col gap-2"></div>
             </div>
 
@@ -62,15 +64,15 @@
                     
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <div class="bg-white p-3 rounded-lg border shadow-sm text-center">
-                            <p class="text-[10px] text-gray-400 font-bold uppercase">Portion</p>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase">Serving Size</p>
                             <p id="resWeight" class="text-md font-bold text-gray-800"></p>
                         </div>
-                        <div class="bg-white p-3 rounded-lg border shadow-sm text-center">
+                        <div id="fatBox" class="bg-white p-3 rounded-lg border shadow-sm text-center">
                             <p class="text-[10px] text-gray-400 font-bold uppercase">Healthy Fats</p>
                             <p id="resFats" class="text-md font-bold text-blue-700"></p>
                         </div>
                     </div>
-                    <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">✅ Add to Log</button>
+                    <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">✅ Add to Today</button>
                 </div>
             </div>
         </div>
@@ -78,36 +80,24 @@
 
     <script>
         const db = {
+            // MILK OPTIONS
+            "milk (cow's - skim/1%)": { type: "Condiment", states: ["liquid"], liquid: "1 Tbsp", note: "Used as flavor enhancer." },
+            "milk (almond - unsweetened)": { type: "Fat", states: ["liquid"], liquid: "2 cups", note: "Counts as 1 Healthy Fat." },
+            "milk (soy - unsweetened)": { type: "Condiment", states: ["liquid"], liquid: "1 Tbsp" },
+            
             // PROTEINS
-            "chicken (white meat)": { type: "Protein", sub: "Leaner", fat: "1 Serving", raw: "8 oz", cooked: "6 oz", states: ["raw", "cooked"] },
-            "chicken (dark meat)": { type: "Protein", sub: "Lean", fat: "0 Servings", raw: "7 oz", cooked: "5 oz", states: ["raw", "cooked"] },
-            "cod": { type: "Protein", sub: "Leanest", fat: "2 Servings", raw: "9 oz", cooked: "7 oz", states: ["raw", "cooked"] },
-            "salmon": { type: "Protein", sub: "Lean", fat: "0 Servings", raw: "7 oz", cooked: "5 oz", states: ["raw", "cooked"] },
+            "chicken (white meat)": { type: "Protein", sub: "Leaner", fat: "1 Serving", states: ["raw", "cooked"], raw: "8 oz", cooked: "6 oz" },
+            "chicken (dark meat)": { type: "Protein", sub: "Lean", fat: "0 Servings", states: ["raw", "cooked"], raw: "7 oz", cooked: "5 oz" },
 
             // VEGETABLES
-            "broccoli": { type: "Green", fat: "N/A", raw: "2.50 oz (1 cup)", cooked: "2.75 oz (1/2 cup)", frozen: "3.25 oz (1/2 cup)", states: ["raw", "cooked", "frozen"] },
-            "bell pepper": { type: "Green", fat: "N/A", raw: "2.63 oz (1/2 cup)", cooked: "2.40 oz (1/2 cup)", frozen: "2.40 oz (1/2 cup)", states: ["raw", "cooked", "frozen"] },
-            "cauliflower": { type: "Green", fat: "N/A", raw: "3.50 oz (1 cup)", cooked: "3.17 oz (1/2 cup)", frozen: "1.76 oz (1/2 cup)", states: ["raw", "cooked", "frozen"] },
-            "mushrooms": { type: "Green", fat: "N/A", raw: "1.23 oz (1/2 cup)", cooked: "2.75 oz (1/2 cup)", canned: "2.33 oz (1/2 cup)", states: ["raw", "cooked", "canned"] },
-            "jicama": { type: "Green", fat: "N/A", raw: "2.29 oz (1/2 cup)", states: ["raw"] },
-            "asparagus": { type: "Green", fat: "N/A", raw: "3.17 oz (approx 6 spears)", cooked: "3.17 oz (1/2 cup)", frozen: "3.53 oz (1/2 cup)", states: ["raw", "cooked", "frozen"] },
-
+            "broccoli": { type: "Green", states: ["raw", "cooked", "frozen"], raw: "2.50 oz (1 cup)", cooked: "2.75 oz (1/2 cup)", frozen: "3.25 oz (1/2 cup)" },
+            "cauliflower": { type: "Green", states: ["raw", "cooked", "frozen"], raw: "3.50 oz (1 cup)", cooked: "3.17 oz (1/2 cup)", frozen: "1.76 oz (1/2 cup)" },
+            
             // CONDIMENTS
-            "cilantro": { type: "Condiment", fat: "N/A", fresh: "1 Tbsp", dried: "1 tsp", states: ["fresh", "dried"] },
-            "basil": { type: "Condiment", fat: "N/A", fresh: "1 Tbsp", dried: "1 tsp", states: ["fresh", "dried"] },
-            "mustard": { type: "Condiment", fat: "N/A", prepared: "1 Tbsp", dried: "1/2 tsp", states: ["prepared", "dried"] }
+            "cilantro": { type: "Condiment", states: ["fresh", "dried"], fresh: "1 Tbsp", dried: "1 tsp" }
         };
 
-        const stateLabels = {
-            raw: "Raw / Fresh",
-            cooked: "Cooked Weight",
-            frozen: "Cooked from Frozen",
-            canned: "Canned (Drained)",
-            fresh: "Fresh Leaves/Chopped",
-            dried: "Dried / Ground",
-            prepared: "Prepared (Liquid)"
-        };
-
+        const stateLabels = { raw: "Raw Weight", cooked: "Cooked Weight", frozen: "From Frozen", liquid: "Liquid Portion", fresh: "Fresh", dried: "Dried" };
         let totals = { Green: 0, Fat: 0, Condiment: 0 };
         let currentItem = null;
 
@@ -115,34 +105,39 @@
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const choiceBox = document.getElementById('choiceContainer');
             const choiceBtnArea = document.getElementById('choiceButtons');
-            const prepArea = document.getElementById('prepArea');
-            const resBox = document.getElementById('searchResult');
             
-            resBox.classList.add('hidden');
             choiceBox.classList.add('hidden');
-            prepArea.classList.add('hidden');
+            document.getElementById('searchResult').classList.add('hidden');
+            document.getElementById('prepArea').classList.add('hidden');
 
-            if (query === "chicken") {
+            if (!query) return;
+
+            // Handle Selection Menus (Milk & Chicken)
+            if (query === "milk" || query === "chicken") {
+                const title = query === "milk" ? "Select Milk Type:" : "Select Chicken Type:";
+                const options = query === "milk" ? ["milk (cow's - skim/1%)", "milk (almond - unsweetened)"] : ["chicken (white meat)", "chicken (dark meat)"];
+                
+                document.getElementById('choiceTitle').innerText = title;
                 choiceBox.classList.remove('hidden');
-                ["chicken (white meat)", "chicken (dark meat)"].forEach(opt => {
+                choiceBtnArea.innerHTML = "";
+                options.forEach(opt => {
                     const btn = document.createElement('button');
                     btn.className = "w-full bg-blue-600 text-white p-3 rounded-lg font-bold text-sm shadow-md";
                     btn.innerText = opt.toUpperCase();
                     btn.onclick = () => setupPrep(opt);
                     choiceBtnArea.appendChild(btn);
                 });
-            } else {
-                const matchKey = Object.keys(db).find(key => key.includes(query));
-                if (matchKey) setupPrep(matchKey);
-                else alert("Item not found. Try 'Chicken' or 'Broccoli'.");
+                return;
             }
+
+            const matchKey = Object.keys(db).find(key => key.includes(query));
+            if (matchKey) setupPrep(matchKey);
+            else alert("Item not found. Try 'Milk', 'Chicken', or 'Broccoli'.");
         }
 
         function setupPrep(key) {
             currentItem = db[key];
-            const prepArea = document.getElementById('prepArea');
             const stateSelect = document.getElementById('foodState');
-            
             stateSelect.innerHTML = "";
             currentItem.states.forEach(s => {
                 const opt = document.createElement('option');
@@ -150,11 +145,8 @@
                 opt.innerText = stateLabels[s];
                 stateSelect.appendChild(opt);
             });
-
-            prepArea.classList.remove('hidden');
+            document.getElementById('prepArea').classList.remove('hidden');
             document.getElementById('choiceContainer').classList.add('hidden');
-            
-            // Auto-trigger calculation when state changes
             stateSelect.onchange = () => showFinalResult(key);
             showFinalResult(key);
         }
@@ -162,8 +154,6 @@
         function showFinalResult(key) {
             const state = document.getElementById('foodState').value;
             const resBox = document.getElementById('searchResult');
-            const resCont = document.getElementById('resultContainer');
-            
             const weightValue = currentItem[state];
             
             document.getElementById('resultName').innerText = key;
@@ -174,11 +164,12 @@
             if (currentItem.type === "Protein") {
                 tTag.innerText = currentItem.sub + " Protein";
                 tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block " + (currentItem.sub === 'Leanest' ? 'leanest-tag' : currentItem.sub === 'Leaner' ? 'leaner-tag' : 'lean-tag');
-                resCont.className = "p-5 rounded-xl border-2 border-blue-200 bg-blue-50";
+            } else if (currentItem.type === "Condiment") {
+                tTag.innerText = "CONDIMENT";
+                tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block condiment-tag";
             } else {
-                tTag.innerText = currentItem.type;
-                tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block bg-white border border-green-200 text-green-700";
-                resCont.className = "p-5 rounded-xl border-2 border-green-200 bg-green-50";
+                tTag.innerText = "HEALTHY FAT";
+                tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block fat-tag";
             }
             resBox.classList.remove('hidden');
         }
@@ -188,7 +179,7 @@
                 totals[currentItem.type]++;
                 updateUI();
             } else {
-                alert(currentItem.sub + " protein logged! Add " + currentItem.fat + " healthy fats.");
+                alert("Protein logged. Follow your Fat Guide!");
             }
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('prepArea').classList.add('hidden');
