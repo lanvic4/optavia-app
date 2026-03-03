@@ -34,26 +34,25 @@
         <div class="card bg-white p-6 shadow-sm border-t-4 border-blue-600">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">1. Preparation State</label>
-                    <select id="foodState" class="w-full border-2 border-gray-200 p-3 rounded-lg bg-gray-50 text-sm outline-none">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Preparation State</label>
+                    <select id="foodState" class="w-full border-2 border-gray-200 p-3 rounded-lg bg-gray-50 text-sm font-bold outline-none focus:border-blue-500">
                         <option value="raw">Raw / Fresh</option>
-                        <option value="cooked_fresh">Cooked (from Fresh)</option>
-                        <option value="frozen">Cooked (from Frozen)</option>
-                        <option value="canned">Canned (No Sugar)</option>
+                        <option value="frozen">Frozen</option>
+                        <option value="cooked">Cooked</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">2. Food Name</label>
-                    <input type="text" id="searchInput" placeholder="Search (e.g. Chicken, Broccoli, Cod)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Food Name</label>
+                    <input type="text" id="searchInput" placeholder="Type here (e.g. Chicken, Broccoli)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
                     <button onclick="executeSearch()" class="w-full search-btn text-white py-4 rounded-xl font-black text-lg shadow-lg uppercase tracking-widest">
                         🔍 Click to Search
                     </button>
                 </div>
             </div>
 
-            <div id="choiceContainer" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <p class="text-xs font-bold text-gray-600 uppercase mb-2">Refine your search:</p>
+            <div id="choiceContainer" class="hidden mt-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                <p class="text-xs font-bold text-blue-800 uppercase mb-2 text-center">Which type of Chicken?</p>
                 <div id="choiceButtons" class="flex flex-col gap-2"></div>
             </div>
 
@@ -84,19 +83,20 @@
 
     <script>
         const db = {
-            // CHICKEN OPTIONS
-            "chicken (white meat)": { type: "Protein", sub: "Leaner", fat: "1 Serving", raw: "8 oz", cooked_fresh: "6 oz", frozen: "6 oz", note: "Skinless breast." },
-            "chicken (dark meat)": { type: "Protein", sub: "Lean", fat: "0 Servings", raw: "7 oz", cooked_fresh: "5 oz", frozen: "5 oz", note: "Thigh/Leg, skinless." },
+            // CHICKEN
+            "chicken (white meat)": { type: "Protein", sub: "Leaner", fat: "1 Serving", raw: "8 oz", cooked: "6 oz", frozen: "6 oz", note: "Breast meat, skinless." },
+            "chicken (dark meat)": { type: "Protein", sub: "Lean", fat: "0 Servings", raw: "7 oz", cooked: "5 oz", frozen: "5 oz", note: "Thigh/Leg, skinless." },
             
             // OTHER PROTEINS
-            "cod": { type: "Protein", sub: "Leanest", fat: "2 Servings", raw: "9 oz", cooked_fresh: "7 oz", note: "White fish." },
-            "salmon": { type: "Protein", sub: "Lean", fat: "0 Servings", raw: "7 oz", cooked_fresh: "5 oz" },
-            "egg whites": { type: "Protein", sub: "Leanest", fat: "2 Servings", any: "2 cups" },
+            "cod": { type: "Protein", sub: "Leanest", fat: "2 Servings", raw: "9 oz", cooked: "7 oz", note: "White fish." },
+            "salmon": { type: "Protein", sub: "Lean", fat: "0 Servings", raw: "7 oz", cooked: "5 oz" },
+            "shrimp": { type: "Protein", sub: "Leanest", fat: "2 Servings", raw: "9 oz", cooked: "7 oz" },
 
             // VEGETABLES
-            "bell pepper": { type: "Green", fat: "N/A", raw: "2.63 oz (1/2 cup)", cooked_fresh: "2.40 oz (1/2 cup)", frozen: "2.40 oz (1/2 cup)" },
-            "broccoli": { type: "Green", fat: "N/A", raw: "2.50 oz (1 cup)", cooked_fresh: "2.75 oz (1/2 cup)", frozen: "3.25 oz (1/2 cup)" },
-            "spinach": { type: "Green", fat: "N/A", raw: "2.12 oz (2 cups)", cooked_fresh: "3.17 oz (1/2 cup)", frozen: "3.35 oz (1/2 cup)" },
+            "bell pepper": { type: "Green", fat: "N/A", raw: "2.63 oz (1/2 cup)", cooked: "2.40 oz (1/2 cup)", frozen: "2.40 oz (1/2 cup)" },
+            "broccoli": { type: "Green", fat: "N/A", raw: "2.50 oz (1 cup)", cooked: "2.75 oz (1/2 cup)", frozen: "3.25 oz (1/2 cup)" },
+            "spinach": { type: "Green", fat: "N/A", raw: "2.12 oz (2 cups)", cooked: "3.17 oz (1/2 cup)", frozen: "3.35 oz (1/2 cup)" },
+            "cabbage": { type: "Green", fat: "N/A", raw: "1.23 oz (1/2 cup shredded)", cooked: "2.65 oz (1/2 cup)", frozen: "2.65 oz (1/2 cup)" },
             
             // FATS/CONDIMENTS
             "olive oil": { type: "Fat", any: "1 tsp (4.5g)" },
@@ -118,12 +118,12 @@
 
             if (!query) return;
 
-            // Handle "Chicken" specifically to trigger the sub-menu
+            // Trigger selector for "Chicken"
             if (query === "chicken") {
                 choiceBox.classList.remove('hidden');
                 ["chicken (white meat)", "chicken (dark meat)"].forEach(opt => {
                     const btn = document.createElement('button');
-                    btn.className = "w-full bg-blue-600 text-white p-3 rounded-lg font-bold text-sm text-left shadow-sm";
+                    btn.className = "w-full bg-blue-600 text-white p-3 rounded-lg font-bold text-sm shadow-md";
                     btn.innerText = opt.toUpperCase();
                     btn.onclick = () => showFinalResult(opt);
                     choiceBtnArea.appendChild(btn);
@@ -131,10 +131,9 @@
                 return;
             }
 
-            // General search
             const matchKey = Object.keys(db).find(key => key.includes(query));
             if (matchKey) showFinalResult(matchKey);
-            else alert("Food not found. Try 'Chicken', 'Spinach', or 'Salmon'.");
+            else alert("Food not found. Try 'Chicken', 'Spinach', or 'Cod'.");
         }
 
         function showFinalResult(key) {
@@ -143,8 +142,8 @@
             const resBox = document.getElementById('searchResult');
             const resCont = document.getElementById('resultContainer');
             
-            // Logic to grab the right weight based on state
-            const weightValue = currentItem[state] || currentItem.any || currentItem.raw || "N/A";
+            // Map weight based on Raw, Frozen, or Cooked
+            const weightValue = currentItem[state] || currentItem.any || currentItem.raw;
             
             document.getElementById('resultName').innerText = key;
             document.getElementById('resWeight').innerText = weightValue;
@@ -173,7 +172,7 @@
                 totals[currentItem.type]++;
                 updateUI();
             } else {
-                alert("Protein logged! Don't forget to add " + currentItem.fat + " healthy fat(s).");
+                alert(currentItem.sub + " logged. Add " + currentItem.fat + " healthy fat(s)!");
             }
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('searchInput').value = "";
@@ -185,7 +184,7 @@
             document.getElementById('condCount').innerText = `${totals.Condiment}/3`;
         }
 
-        function resetApp() { if(confirm("Reset all daily totals?")) { totals={Green:0, Fat:0, Condiment:0}; updateUI(); } }
+        function resetApp() { if(confirm("Reset today's logs?")) { totals={Green:0, Fat:0, Condiment:0}; updateUI(); } }
     </script>
 </body>
 </html>
