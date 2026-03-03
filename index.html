@@ -36,8 +36,8 @@
         <div class="card bg-white p-6 shadow-sm border-t-4 border-blue-600">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search Food Database</label>
-                    <input type="text" id="searchInput" placeholder="Search (e.g. Chicken, Shrimp, Avocado)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search Guide (Proteins, Greens, Milks)</label>
+                    <input type="text" id="searchInput" placeholder="Search (e.g. Chicken, Milk, Half and Half)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
                     <button onclick="executeSearch()" class="w-full search-btn text-white py-4 rounded-xl font-black text-lg shadow-lg uppercase tracking-widest">
                         🔍 Search
                     </button>
@@ -45,7 +45,7 @@
             </div>
 
             <div id="choiceContainer" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <p id="choiceTitle" class="text-xs font-bold text-gray-600 uppercase mb-3 text-center">Tap to select:</p>
+                <p id="choiceTitle" class="text-xs font-bold text-gray-600 uppercase mb-3 text-center">Select Type/Serving:</p>
                 <div id="choiceButtons" class="flex flex-col gap-2"></div>
             </div>
 
@@ -74,39 +74,27 @@
 
     <script>
         const db = [
-            // LEANEST PROTEINS (7 oz Cooked + 2 Fats)
-            { name: "Cod, Flounder, Tilapia (Cooked)", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["fish", "cod", "flounder", "tilapia"] },
-            { name: "Shrimp, Scallops, Crab (Cooked)", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["shrimp", "seafood", "scallops", "crab"] },
-            { name: "Egg Whites (Liquid)", type: "Protein", sub: "Leanest", weight: "2 Cups", fat: "2 Servings", tags: ["egg", "whites"] },
-            { name: "Turkey Breast (Cooked)", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["turkey", "breast"] },
+            // MILK & CREAMER OPTIONS (COMPREHENSIVE)
+            { name: "Almond Milk (Unsweetened Original/Vanilla) - Healthy Fat", type: "Fat", weight: "2 Cups", fat: "1", tags: ["milk", "almond", "unsweetened"] },
+            { name: "Almond Milk (Unsweetened Original/Vanilla) - Condiment", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "almond", "unsweetened"] },
+            { name: "Cashew Milk (Unsweetened Original/Vanilla) - Healthy Fat", type: "Fat", weight: "2 Cups", fat: "1", tags: ["milk", "cashew", "unsweetened"] },
+            { name: "Cashew Milk (Unsweetened Original/Vanilla) - Condiment", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "cashew", "unsweetened"] },
+            { name: "Half-and-Half (Regular) - Condiment", type: "Condiment", weight: "2 Tbsp", fat: "N/A", tags: ["half and half", "creamer", "milk"] },
+            { name: "Cow's Milk (Skim/Fat-Free) - Condiment", type: "Condiment", weight: "1 Tbsp", fat: "N/A", tags: ["milk", "cow", "skim", "dairy"] },
+            { name: "Soy Milk (Unsweetened) - Condiment", type: "Condiment", weight: "1 Tbsp", fat: "N/A", tags: ["milk", "soy", "unsweetened"] },
+            { name: "Coconut Milk (Unsweetened Refrigerated) - Condiment", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "coconut", "unsweetened"] },
 
-            // LEANER PROTEINS (6 oz Cooked + 1 Fat)
+            // PROTEINS (Cooked Only)
             { name: "Chicken Breast (Cooked)", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["chicken", "breast"] },
-            { name: "Salmon, Swordfish, Tuna (Cooked)", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["salmon", "tuna", "swordfish"] },
-            { name: "Ground Turkey (95%-98% Lean)", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["turkey", "ground"] },
+            { name: "Chicken Thigh/Drumstick (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["chicken", "thigh", "dark meat"] },
+            { name: "Turkey Breast (Cooked)", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["turkey", "breast"] },
+            { name: "Egg Whites (Liquid)", type: "Protein", sub: "Leanest", weight: "2 Cups", fat: "2 Servings", tags: ["egg", "whites"] },
 
-            // LEAN PROTEINS (5 oz Cooked + 0 Fats)
-            { name: "Beef: Sirloin, Steak, Roast (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["beef", "steak", "sirloin", "roast"] },
-            { name: "Chicken Thigh or Drumstick (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["chicken", "thigh", "dark meat"] },
-            { name: "Pork Tenderloin (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["pork", "tenderloin"] },
-            { name: "Whole Eggs", type: "Protein", sub: "Lean", weight: "3 Eggs", fat: "0 Servings", tags: ["egg", "whole"] },
-
-            // GREENS (Vegetables)
-            { name: "Asparagus (Cooked)", type: "Green", weight: "1/2 Cup (3.17 oz)", fat: "N/A", tags: ["asparagus"] },
+            // GREENS (Raw/Cooked/Frozen logic)
             { name: "Broccoli (Cooked)", type: "Green", weight: "1/2 Cup (2.75 oz)", fat: "N/A", tags: ["broccoli"] },
             { name: "Broccoli (Raw)", type: "Green", weight: "1 Cup (2.50 oz)", fat: "N/A", tags: ["broccoli"] },
-            { name: "Cauliflower (Cooked)", type: "Green", weight: "1/2 Cup (3.17 oz)", fat: "N/A", tags: ["cauliflower"] },
             { name: "Spinach (Cooked)", type: "Green", weight: "1/2 Cup (3.17 oz)", fat: "N/A", tags: ["spinach"] },
-            { name: "Spinach (Raw)", type: "Green", weight: "1 Cup (1.06 oz)", fat: "N/A", tags: ["spinach"] },
-            { name: "Zucchini (Cooked)", type: "Green", weight: "1/2 Cup (3.17 oz)", fat: "N/A", tags: ["zucchini"] },
-
-            // HEALTHY FATS & CONDIMENTS
-            { name: "Avocado", type: "Fat", weight: "1.5 oz (approx 1/4 med)", fat: "1", tags: ["avocado"] },
-            { name: "Almond Milk - Unsweetened (As 1 Healthy Fat)", type: "Fat", weight: "2 Cups", fat: "1", tags: ["milk", "almond"] },
-            { name: "Almond Milk - Unsweetened (As 1 Condiment)", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "almond"] },
-            { name: "Oil (Olive, Avocado, Canola)", type: "Fat", weight: "1 tsp", fat: "1", tags: ["oil", "olive", "avocado"] },
-            { name: "Salad Dressing (Light/Reduced Fat)", type: "Condiment", weight: "1 Tbsp", fat: "N/A", tags: ["dressing", "salad"] },
-            { name: "Mayo (Light)", type: "Condiment", weight: "1 tsp", fat: "N/A", tags: ["mayo", "mayonnaise"] }
+            { name: "Spinach (Raw)", type: "Green", weight: "1 Cup (1.06 oz)", fat: "N/A", tags: ["spinach"] }
         ];
 
         let totals = { Green: 0, Fat: 0, Condiment: 0 };
@@ -123,7 +111,11 @@
 
             if (!query) return;
 
-            const matches = db.filter(item => item.tags.some(tag => tag.includes(query)));
+            // Search by tags (handling phrases like "half and half")
+            const matches = db.filter(item => 
+                item.tags.some(tag => tag.includes(query)) || 
+                item.name.toLowerCase().includes(query)
+            );
 
             if (matches.length > 0) {
                 choiceBox.classList.remove('hidden');
@@ -136,7 +128,7 @@
                     choiceBtnArea.appendChild(btn);
                 });
             } else {
-                alert("Food not found. Try keywords like 'Fish', 'Beef', or 'Zucchini'.");
+                alert("No matching items found.");
             }
         }
 
@@ -174,7 +166,7 @@
 
         function logSearchResult() {
             if (currentItem.type === "Protein") {
-                alert("Logged! For this " + currentItem.sub + " protein, add " + currentItem.fat + " healthy fats to your meal.");
+                alert("Logged! Add " + currentItem.fat + " healthy fats to this meal.");
             } else {
                 totals[currentItem.type]++;
                 updateUI();
