@@ -10,8 +10,7 @@
         .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .search-btn { background-color: #2563eb !important; transition: all 0.2s; }
         .search-btn:active { transform: scale(0.95); }
-        .leanest-tag { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .leaner-tag { background-color: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+        .leaner-tag { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .lean-tag { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
         .fat-tag { background-color: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
         .condiment-tag { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
@@ -37,7 +36,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search Food Database</label>
-                    <input type="text" id="searchInput" placeholder="Search (e.g. Chicken, Broccoli, Milk)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
+                    <input type="text" id="searchInput" placeholder="Search (Chicken, Broccoli, Spinach...)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
                     <button onclick="executeSearch()" class="w-full search-btn text-white py-4 rounded-xl font-black text-lg shadow-lg uppercase tracking-widest">
                         🔍 Search
                     </button>
@@ -45,7 +44,7 @@
             </div>
 
             <div id="choiceContainer" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <p id="choiceTitle" class="text-xs font-bold text-gray-600 uppercase mb-3 text-center">Select your preparation:</p>
+                <p id="choiceTitle" class="text-xs font-bold text-gray-600 uppercase mb-3 text-center">Tap to select:</p>
                 <div id="choiceButtons" class="flex flex-col gap-2"></div>
             </div>
 
@@ -66,7 +65,7 @@
                             <p id="resFats" class="text-md font-bold text-blue-700"></p>
                         </div>
                     </div>
-                    <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">✅ Add to Log</button>
+                    <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">✅ Add to Today</button>
                 </div>
             </div>
         </div>
@@ -74,18 +73,30 @@
 
     <script>
         const db = [
-            // CHICKEN (Simplified: Assumes Cooked)
-            { name: "Chicken - White Meat (Cooked)", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["chicken", "breast"] },
-            { name: "Chicken - Dark Meat (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["chicken", "thigh", "leg"] },
+            // CHICKEN (Cooked Only)
+            { name: "Chicken - White Meat", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["chicken", "breast"] },
+            { name: "Chicken - Dark Meat", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["chicken", "thigh", "leg"] },
             
-            // MILK (Logical Usage)
-            { name: "Almond Milk (As a Healthy Fat)", type: "Fat", weight: "2 Cups", fat: "1", tags: ["milk", "almond"] },
-            { name: "Almond Milk (As a Condiment)", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "almond"] },
+            // OTHER PROTEINS (Cooked Only)
+            { name: "Turkey Breast", type: "Protein", sub: "Leanest", weight: "7 oz", fat: "2 Servings", tags: ["turkey"] },
+            { name: "Steak (Lean Cut)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["steak", "beef"] },
 
-            // BROCCOLI (Necessary States)
+            // MILK USAGE
+            { name: "Milk - Almond (As 1 Healthy Fat)", type: "Fat", weight: "2 Cups", fat: "1", tags: ["milk", "almond"] },
+            { name: "Milk - Almond (As 1 Condiment)", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "almond"] },
+
+            // BROCCOLI (States)
             { name: "Broccoli (Raw)", type: "Green", weight: "2.50 oz (1 cup)", fat: "N/A", tags: ["broccoli"] },
             { name: "Broccoli (Cooked)", type: "Green", weight: "2.75 oz (1/2 cup)", fat: "N/A", tags: ["broccoli"] },
-            { name: "Broccoli (Frozen/Cooked)", type: "Green", weight: "3.25 oz (1/2 cup)", fat: "N/A", tags: ["broccoli"] }
+            { name: "Broccoli (Frozen)", type: "Green", weight: "3.25 oz (1/2 cup)", fat: "N/A", tags: ["broccoli"] },
+
+            // SPINACH (States)
+            { name: "Spinach (Raw)", type: "Green", weight: "1.06 oz (1 cup)", fat: "N/A", tags: ["spinach"] },
+            { name: "Spinach (Cooked)", type: "Green", weight: "2.75 oz (1/2 cup)", fat: "N/A", tags: ["spinach"] },
+
+            // ASPARAGUS (States)
+            { name: "Asparagus (Raw)", type: "Green", weight: "2.36 oz (1/2 cup)", fat: "N/A", tags: ["asparagus"] },
+            { name: "Asparagus (Cooked)", type: "Green", weight: "3.17 oz (1/2 cup)", fat: "N/A", tags: ["asparagus"] }
         ];
 
         let totals = { Green: 0, Fat: 0, Condiment: 0 };
@@ -115,7 +126,7 @@
                     choiceBtnArea.appendChild(btn);
                 });
             } else {
-                alert("Food not found. Try 'Chicken' or 'Broccoli'.");
+                alert("Food not found in database.");
             }
         }
 
