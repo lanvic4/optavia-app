@@ -36,34 +36,23 @@
         <div class="card bg-white p-6 shadow-sm border-t-4 border-blue-600">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">1. Preparation Method</label>
-                    <select id="foodState" class="w-full border-2 border-gray-200 p-3 rounded-lg bg-gray-50 text-sm font-bold outline-none">
-                        <option value="raw">Raw / Fresh</option>
-                        <option value="cooked">Cooked</option>
-                        <option value="frozen">Frozen</option>
-                        <option value="dried">Dried / Ground</option>
-                        <option value="liquid">Liquid / Unsweetened</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">2. Food Name</label>
-                    <input type="text" id="searchInput" placeholder="Search (Milk, Chicken, Broccoli)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search Food Database</label>
+                    <input type="text" id="searchInput" placeholder="Search (e.g. Chicken, Broccoli, Milk)" class="w-full border-2 border-gray-200 p-4 rounded-lg text-lg bg-white outline-none mb-3">
                     <button onclick="executeSearch()" class="w-full search-btn text-white py-4 rounded-xl font-black text-lg shadow-lg uppercase tracking-widest">
                         🔍 Search
                     </button>
                 </div>
             </div>
 
-            <div id="choiceContainer" class="hidden mt-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
-                <p id="choiceTitle" class="text-xs font-bold text-blue-800 uppercase mb-3 text-center"></p>
+            <div id="choiceContainer" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <p id="choiceTitle" class="text-xs font-bold text-gray-600 uppercase mb-3 text-center">Select your preparation:</p>
                 <div id="choiceButtons" class="flex flex-col gap-2"></div>
             </div>
 
             <div id="searchResult" class="hidden mt-6 animate-in slide-in-from-top duration-300">
                 <div id="resultContainer" class="p-5 rounded-xl border-2">
                     <div class="mb-4 text-center">
-                        <p id="resultName" class="font-black text-2xl text-gray-800 uppercase leading-tight"></p>
+                        <p id="resultName" class="font-black text-xl text-gray-800 uppercase leading-tight"></p>
                         <div id="typeTag" class="mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block"></div>
                     </div>
                     
@@ -77,7 +66,6 @@
                             <p id="resFats" class="text-md font-bold text-blue-700"></p>
                         </div>
                     </div>
-                    <p id="resNote" class="text-center text-xs text-gray-500 mb-4 italic"></p>
                     <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-4 rounded-xl font-black text-lg shadow-md uppercase">✅ Add to Log</button>
                 </div>
             </div>
@@ -85,20 +73,20 @@
     </div>
 
     <script>
-        const db = {
-            // MILK VARIATIONS
-            "almond milk (unsweetened) - as a healthy fat": { type: "Fat", liquid: "2 Cups", any: "2 Cups", note: "Counts as 1 Healthy Fat." },
-            "almond milk (unsweetened) - as a condiment": { type: "Condiment", liquid: "1 Cup", any: "1 Cup", note: "Counts as 1 Condiment." },
-            "cow's milk (skim) - as a condiment": { type: "Condiment", liquid: "1 Tbsp", any: "1 Tbsp", note: "Common flavor enhancer." },
+        const db = [
+            // CHICKEN (Simplified: Assumes Cooked)
+            { name: "Chicken - White Meat (Cooked)", type: "Protein", sub: "Leaner", weight: "6 oz", fat: "1 Serving", tags: ["chicken", "breast"] },
+            { name: "Chicken - Dark Meat (Cooked)", type: "Protein", sub: "Lean", weight: "5 oz", fat: "0 Servings", tags: ["chicken", "thigh", "leg"] },
             
-            // CHICKEN VARIATIONS
-            "chicken breast (white meat)": { type: "Protein", sub: "Leaner", fat: "1 Serving", raw: "8 oz", cooked: "6 oz" },
-            "chicken thigh (dark meat)": { type: "Protein", sub: "Lean", fat: "0 Servings", raw: "7 oz", cooked: "5 oz" },
-            
-            // VEGETABLES
-            "broccoli": { type: "Green", raw: "2.50 oz (1 cup)", cooked: "2.75 oz (1/2 cup)", frozen: "3.25 oz (1/2 cup)" },
-            "cauliflower": { type: "Green", raw: "3.50 oz (1 cup)", cooked: "3.17 oz (1/2 cup)", frozen: "1.76 oz (1/2 cup)" }
-        };
+            // MILK (Logical Usage)
+            { name: "Almond Milk (As a Healthy Fat)", type: "Fat", weight: "2 Cups", fat: "1", tags: ["milk", "almond"] },
+            { name: "Almond Milk (As a Condiment)", type: "Condiment", weight: "1 Cup", fat: "N/A", tags: ["milk", "almond"] },
+
+            // BROCCOLI (Necessary States)
+            { name: "Broccoli (Raw)", type: "Green", weight: "2.50 oz (1 cup)", fat: "N/A", tags: ["broccoli"] },
+            { name: "Broccoli (Cooked)", type: "Green", weight: "2.75 oz (1/2 cup)", fat: "N/A", tags: ["broccoli"] },
+            { name: "Broccoli (Frozen/Cooked)", type: "Green", weight: "3.25 oz (1/2 cup)", fat: "N/A", tags: ["broccoli"] }
+        ];
 
         let totals = { Green: 0, Fat: 0, Condiment: 0 };
         let currentItem = null;
@@ -114,65 +102,59 @@
 
             if (!query) return;
 
-            // Filter database keys based on search
-            const matches = Object.keys(db).filter(k => k.includes(query));
+            const matches = db.filter(item => item.tags.some(tag => tag.includes(query)));
 
-            if (matches.length > 1) {
-                document.getElementById('choiceTitle').innerText = `Select the exact ${query} type:`;
+            if (matches.length > 0) {
                 choiceBox.classList.remove('hidden');
                 choiceBtnArea.innerHTML = "";
-                matches.forEach(opt => {
+                matches.forEach(item => {
                     const btn = document.createElement('button');
-                    btn.className = "w-full bg-blue-600 text-white p-3 rounded-lg font-bold text-sm shadow-md uppercase text-left pl-4";
-                    btn.innerText = `• ${opt}`;
-                    btn.onclick = () => showFinalResult(opt);
+                    btn.className = "w-full bg-white border-2 border-blue-500 text-blue-700 p-3 rounded-lg font-bold text-sm shadow-sm uppercase text-left hover:bg-blue-50";
+                    btn.innerText = item.name;
+                    btn.onclick = () => showFinalResult(item);
                     choiceBtnArea.appendChild(btn);
                 });
-            } else if (matches.length === 1) {
-                showFinalResult(matches[0]);
             } else {
-                alert("No results. Try 'Milk', 'Chicken', or 'Broccoli'.");
+                alert("Food not found. Try 'Chicken' or 'Broccoli'.");
             }
         }
 
-        function showFinalResult(key) {
-            currentItem = db[key];
-            const state = document.getElementById('foodState').value;
-            const resBox = document.getElementById('searchResult');
-            const resCont = document.getElementById('resultContainer');
-            
-            const weightValue = currentItem[state] || currentItem.any || currentItem.liquid || "N/A (Change State)";
-            
-            document.getElementById('resultName').innerText = key;
-            document.getElementById('resWeight').innerText = weightValue;
-            document.getElementById('resFats').innerText = currentItem.fat || "N/A";
-            document.getElementById('resNote').innerText = currentItem.note || "";
+        function showFinalResult(item) {
+            currentItem = item;
+            document.getElementById('resultName').innerText = item.name;
+            document.getElementById('resWeight').innerText = item.weight;
+            document.getElementById('resFats').innerText = item.fat;
             
             const tTag = document.getElementById('typeTag');
-            if (currentItem.type === "Protein") {
-                tTag.innerText = currentItem.sub + " Protein";
-                tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block " + (currentItem.sub === 'Leanest' ? 'leanest-tag' : currentItem.sub === 'Leaner' ? 'leaner-tag' : 'lean-tag');
-            } else if (currentItem.type === "Fat") {
+            const resCont = document.getElementById('resultContainer');
+
+            if (item.type === "Protein") {
+                tTag.innerText = item.sub + " Protein";
+                tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block leaner-tag";
+                resCont.className = "p-5 rounded-xl border-2 border-blue-200 bg-blue-50";
+            } else if (item.type === "Fat") {
                 tTag.innerText = "HEALTHY FAT";
                 tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block fat-tag";
-            } else if (currentItem.type === "Condiment") {
+                resCont.className = "p-5 rounded-xl border-2 border-yellow-200 bg-white";
+            } else if (item.type === "Condiment") {
                 tTag.innerText = "CONDIMENT";
                 tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block condiment-tag";
+                resCont.className = "p-5 rounded-xl border-2 border-blue-100 bg-white";
             } else {
                 tTag.innerText = "GREEN";
                 tTag.className = "mt-2 text-[10px] font-bold px-3 py-1 rounded-full inline-block bg-green-100 text-green-700";
+                resCont.className = "p-5 rounded-xl border-2 border-green-200 bg-white";
             }
 
-            resBox.classList.remove('hidden');
+            document.getElementById('searchResult').classList.remove('hidden');
             document.getElementById('choiceContainer').classList.add('hidden');
         }
 
         function logSearchResult() {
             if (currentItem.type === "Protein") {
-                alert("Logged! Remember to add " + currentItem.fat + " healthy fats to your plate.");
+                alert("Logged! Add " + currentItem.fat + " healthy fats.");
             } else {
-                const type = currentItem.type || "Green";
-                totals[type]++;
+                totals[currentItem.type]++;
                 updateUI();
             }
             document.getElementById('searchResult').classList.add('hidden');
