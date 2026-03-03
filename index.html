@@ -3,186 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optavia 5&1 Daily Tracker</title>
+    <title>Optavia Precision Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .optavia-green { background-color: #2D5A27; }
         .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input:focus { border-color: #2D5A27; outline: none; ring: 2px; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans pb-10">
+<body class="bg-gray-100 min-h-screen font-sans pb-24">
 
-    <nav class="optavia-green p-4 text-white text-center shadow-lg">
-        <h1 class="text-xl font-bold">5&1 Daily Tracker</h1>
+    <nav class="optavia-green p-4 text-white text-center sticky top-0 z-50 shadow-md">
+        <h1 class="text-xl font-bold tracking-tight">5&1 Precision Log</h1>
     </nav>
 
     <div class="max-w-md mx-auto p-4 space-y-4">
         
-        <div class="card bg-white p-6">
-            <h2 class="font-bold text-gray-700 mb-3">Daily Fuelings (5 Required)</h2>
-            <div class="flex justify-between items-center">
-                <span id="fuelingCount" class="text-4xl font-bold text-green-700">0</span>
-                <button onclick="logFueling()" class="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold">Log Fueling</button>
+        <div class="card bg-white p-4">
+            <h3 class="text-[10px] font-bold text-gray-400 uppercase mb-3">Daily Staples (One-Tap)</h3>
+            <div class="flex gap-2 overflow-x-auto pb-2">
+                <button onclick="quickAdd('olive oil')" class="bg-yellow-50 text-yellow-700 px-3 py-2 rounded-full text-xs font-bold border border-yellow-200 whitespace-nowrap">💧 Olive Oil</button>
+                <button onclick="quickAdd('spinach')" class="bg-green-50 text-green-700 px-3 py-2 rounded-full text-xs font-bold border border-green-200 whitespace-nowrap">🍃 Spinach</button>
+                <button onclick="quickAdd('mustard')" class="bg-blue-50 text-blue-700 px-3 py-2 rounded-full text-xs font-bold border border-blue-200 whitespace-nowrap">🍯 Mustard</button>
+                <button onclick="quickAdd('bell pepper')" class="bg-red-50 text-red-700 px-3 py-2 rounded-full text-xs font-bold border border-red-200 whitespace-nowrap">🫑 Bell Pepper</button>
             </div>
         </div>
 
-        <div class="card bg-white p-6">
-            <h2 class="font-bold text-gray-700 mb-3">Water (64 oz Required)</h2>
-            <div class="flex justify-between items-center mb-2">
-                <span id="waterCount" class="text-3xl font-bold text-blue-700">0 oz</span>
-                <button onclick="addWater()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">+8 oz</button>
+        <div class="card bg-white p-6 shadow-sm border-t-4 border-green-700">
+            <div class="flex justify-between items-end mb-4">
+                <div class="flex-1 mr-2">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">State</label>
+                    <select id="foodState" class="w-full border p-2 rounded-lg bg-gray-50 text-xs">
+                        <option value="raw">Raw / Fresh</option>
+                        <option value="frozen">Cooked (Frozen)</option>
+                        <option value="cooked_fresh">Cooked (Fresh)</option>
+                    </select>
+                </div>
+                <div class="flex-[2]">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Search Food</label>
+                    <input type="text" id="searchInput" oninput="instantSearch()" placeholder="Type to search..." class="w-full border p-2 rounded-lg text-sm bg-gray-50">
+                </div>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div id="waterBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+
+            <div id="searchResult" class="hidden animate-in fade-in duration-300">
+                <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                    <div class="flex justify-between items-center mb-3">
+                        <span id="resultName" class="font-black text-lg text-gray-800 uppercase"></span>
+                        <span id="resultCategory" class="text-[10px] font-bold px-2 py-1 rounded-md"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-white p-2 rounded border"><p class="text-[9px] text-gray-400 font-bold uppercase">Volume</p><p id="resVol" class="text-sm font-bold"></p></div>
+                        <div class="bg-white p-2 rounded border"><p class="text-[9px] text-gray-400 font-bold uppercase">Weight</p><p id="resWeight" class="text-sm font-bold"></p></div>
+                    </div>
+                    <button onclick="logSearchResult()" class="w-full mt-4 bg-green-700 text-white p-3 rounded-lg font-bold shadow-lg active:scale-95 transition-transform">ADD SERVING</button>
+                </div>
             </div>
         </div>
 
-        <div class="card bg-white p-6">
-            <h2 class="font-bold text-gray-700 mb-1">Search Food</h2>
-            <p class="text-xs text-gray-500 mb-3">Type name to get exact Optavia serving size.</p>
-            
-            <input type="text" id="searchInput" placeholder="Search (e.g. Salmon)..." class="w-full border p-2 rounded-lg mb-2 text-sm">
-            
-            <button onclick="searchFoodDatabase()" class="w-full bg-gray-800 text-white p-2 rounded-lg font-bold text-sm">🔍 Search Database</button>
-            
-            <div id="searchResult" class="bg-gray-100 p-3 rounded-lg text-sm hidden mt-3">
-                <p id="resultName" class="font-bold"></p>
-                <p id="resultCategory" class="text-green-700"></p>
-                <p id="resultInstructions" class="text-gray-600 mb-2"></p>
-                <button onclick="logSearchResult()" class="w-full bg-green-600 text-white p-2 rounded-lg font-bold text-sm">Add to Today</button>
+        <div class="card bg-gray-900 text-white p-6 shadow-xl">
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div><p class="text-green-400 text-[10px] font-bold uppercase mb-1">Greens</p><p id="greenCount" class="text-3xl font-black">0/3</p></div>
+                <div class="border-x border-gray-700"><p class="text-yellow-400 text-[10px] font-bold uppercase mb-1">Fats</p><p id="fatCount" class="text-3xl font-black">0</p></div>
+                <div><p class="text-blue-400 text-[10px] font-bold uppercase mb-1">Cond.</p><p id="condCount" class="text-3xl font-black">0/3</p></div>
             </div>
-        </div>
-
-        <div class="card bg-green-50 p-4 border border-green-200">
-            <h3 class="text-center font-bold text-green-900">Today's Totals</h3>
-            <div class="flex justify-around mt-2 text-center mb-4">
-                <div><p class="text-xs text-gray-500">Greens</p><p id="greenCount" class="text-xl font-bold">0</p></div>
-                <div><p class="text-xs text-gray-500">Fats</p><p id="fatCount" class="text-xl font-bold">0</p></div>
-                <div><p class="text-xs text-gray-500">Cond</p><p id="condCount" class="text-xl font-bold">0</p></div>
-            </div>
-            <button onclick="resetApp()" class="w-full bg-red-100 text-red-700 p-2 rounded-lg font-bold text-sm border border-red-300">Reset Day</button>
         </div>
 
     </div>
 
     <script>
-        let greens = 0; let fats = 0; let condiments = 0; let fuelings = 0; let water = 0;
-        let currentItem = null;
-
-        // Expanded Hardcoded Optavia Database
-        const optaviaDB = {
-            // --- PROTEINS (Leanest 7oz, Lean 6oz, Moderate 5oz) ---
-            "cod": { type: "Protein", serving: "7 oz (raw weight)" },
-            "shrimp": { type: "Protein", serving: "7 oz (raw weight)" },
-            "egg whites": { type: "Protein", serving: "1.5 cups" },
-            "chicken breast": { type: "Protein", serving: "6 oz (raw weight)" },
-            "salmon": { type: "Protein", serving: "6 oz (raw weight)" },
-            "swordfish": { type: "Protein", serving: "6 oz (raw weight)" },
-            "ground turkey 93%": { type: "Protein", serving: "6 oz (raw weight)" },
-            "ground beef 85%": { type: "Protein", serving: "5 oz (raw weight)" },
-            "lamb": { type: "Protein", serving: "5 oz (raw weight)" },
-            "pork chop": { type: "Protein", serving: "5 oz (raw weight)" },
-
-            // --- GREENS (3 Servings needed for a meal) ---
-            "spinach": { type: "Green Vegetable", serving: "2 cups (raw)" },
-            "lettuce": { type: "Green Vegetable", serving: "2 cups (raw)" },
-            "broccoli": { type: "Green Vegetable", serving: "1 cup (raw)" },
-            "zucchini": { type: "Green Vegetable", serving: "1 cup (raw)" },
-            "cauliflower": { type: "Green Vegetable", serving: "1 cup (raw)" },
-            "asparagus": { type: "Green Vegetable", serving: "1 cup (raw)" },
-            "green beans": { type: "Green Vegetable", serving: "1 cup (raw)" },
-            "bell peppers": { type: "Green Vegetable", serving: "1/2 cup (raw)" },
-            "tomatoes": { type: "Green Vegetable", serving: "1/2 cup (raw)" },
-
-            // --- HEALTHY FATS ---
-            "olive oil": { type: "Healthy Fat", serving: "1 teaspoon" },
-            "butter": { type: "Healthy Fat", serving: "1 teaspoon" },
-            "avocado": { type: "Healthy Fat", serving: "1.5 ounces" },
-            "almonds": { type: "Healthy Fat", serving: "10 whole" },
-            "walnuts": { type: "Healthy Fat", serving: "7 halves" },
-            "olives": { type: "Healthy Fat", serving: "5 large" },
-
-            // --- CONDIMENTS ---
-            "mustard": { type: "Condiment", serving: "2 tablespoons" },
-            "soy sauce": { type: "Condiment", serving: "1 tablespoon" },
-            "hot sauce": { type: "Condiment", serving: "1 tablespoon" },
-            "vinegar": { type: "Condiment", serving: "2 tablespoons" },
-            "lemon juice": { type: "Condiment", serving: "2 tablespoons" },
-            "garlic": { type: "Condiment", serving: "1 clove" }
+        // DATA OBJECT (Local for speed)
+        const db = {
+            "bell pepper": { type: "Green", raw: {v:"1/2 cup", w:"2.63oz"}, frozen: {v:"1/2 cup", w:"2.40oz"}, cooked_fresh: {v:"1/2 cup", w:"2.40oz"} },
+            "spinach": { type: "Green", raw: {v:"2 cups", w:"2.12oz"}, frozen: {v:"1/2 cup", w:"3.35oz"}, cooked_fresh: {v:"1/2 cup", w:"3.17oz"} },
+            "broccoli": { type: "Green", raw: {v:"1 cup", w:"2.50oz"}, frozen: {v:"1/2 cup", w:"3.25oz"}, cooked_fresh: {v:"1/2 cup", w:"2.75oz"} },
+            "mushrooms": { type: "Green", raw: {v:"1/2 cup", w:"1.23oz"}, frozen: {v:"1/2 cup", w:"2.75oz"}, cooked_fresh: {v:"1/2 cup", w:"2.75oz"} },
+            "cabbage": { type: "Green", raw: {v:"1/2 cup", w:"1.23oz"}, frozen: {v:"1/2 cup", w:"2.65oz"}, cooked_fresh: {v:"1/2 cup", w:"2.65oz"} },
+            "olive oil": { type: "Fat", any: {v:"1 tsp", w:"4.5g"} },
+            "avocado": { type: "Fat", any: {v:"1/4 small", w:"1.5oz"} },
+            "mustard": { type: "Condiment", any: {v:"1 Tbsp", w:"N/A"} },
+            "cilantro": { type: "Condiment", any: {v:"1 Tbsp", w:"N/A"} }
         };
 
-        window.onload = function() { checkAndResetDate(); };
+        let totals = { Green: 0, Fat: 0, Condiment: 0 };
+        let currentItem = null;
 
-        function checkAndResetDate() {
-            const lastDate = localStorage.getItem('lastDate');
-            const today = new Date().toDateString();
-            if (lastDate !== today) { resetApp(false); localStorage.setItem('lastDate', today); }
-        }
-
-        function resetApp(manual = true) {
-            if(manual && !confirm("Are you sure you want to reset the day?")) return;
-            greens = 0; fats = 0; condiments = 0; fuelings = 0; water = 0;
-            document.getElementById('fuelingCount').innerText = 0;
-            document.getElementById('waterCount').innerText = "0 oz";
-            document.getElementById('waterBar').style.width = "0%";
-            document.getElementById('greenCount').innerText = 0;
-            document.getElementById('fatCount').innerText = 0;
-            document.getElementById('condCount').innerText = 0;
-            document.getElementById('searchResult').classList.add('hidden');
-            document.getElementById('searchInput').value = "";
-        }
-
-        function logFueling() {
-            if(fuelings < 5) {
-                fuelings++;
-                document.getElementById('fuelingCount').innerText = fuelings;
-            } else { alert("You have logged all 5 fuelings!"); }
-        }
-
-        function addWater() {
-            water += 8;
-            document.getElementById('waterCount').innerText = water + " oz";
-            let percent = (water / 64) * 100;
-            document.getElementById('waterBar').style.width = Math.min(percent, 100) + "%";
-        }
-
-        function searchFoodDatabase() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const resultDisplay = document.getElementById('searchResult');
-            const resName = document.getElementById('resultName');
-            const resCat = document.getElementById('resultCategory');
-            const resInst = document.getElementById('resultInstructions');
+        function instantSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const state = document.getElementById('foodState').value;
+            const resBox = document.getElementById('searchResult');
             
-            resultDisplay.classList.remove('hidden');
-            
-            if (optaviaDB[query]) {
-                currentItem = optaviaDB[query];
-                resName.innerText = query.toUpperCase();
-                resCat.innerText = currentItem.type;
-                resInst.innerText = `1 serving is ${currentItem.serving}.`;
+            if (db[query]) {
+                currentItem = db[query];
+                const data = currentItem[state] || currentItem.any || currentItem.raw;
+                document.getElementById('resultName').innerText = query;
+                document.getElementById('resVol').innerText = data.v;
+                document.getElementById('resWeight').innerText = data.w;
+                
+                const catEl = document.getElementById('resultCategory');
+                catEl.innerText = currentItem.type;
+                catEl.className = currentItem.type === "Green" ? "bg-green-200 text-green-800" : "bg-blue-200 text-blue-800";
+                
+                resBox.classList.remove('hidden');
             } else {
-                resName.innerText = "Item not found in Optavia guide.";
-                resCat.innerText = "";
-                resInst.innerText = "Please check spelling (e.g., 'chicken breast').";
-                currentItem = null;
+                resBox.classList.add('hidden');
             }
+        }
+
+        function quickAdd(name) {
+            document.getElementById('searchInput').value = name;
+            instantSearch();
+            logSearchResult();
         }
 
         function logSearchResult() {
             if (!currentItem) return;
-            if (currentItem.type === "Green Vegetable") {
-                if(greens < 3) { greens++; document.getElementById('greenCount').innerText = greens; }
-                else { alert("You have already logged 3 Greens!"); }
-            } else if (currentItem.type === "Healthy Fat") {
-                fats++; document.getElementById('fatCount').innerText = fats;
-            } else if (currentItem.type === "Condiment") {
-                condiments++; document.getElementById('condCount').innerText = condiments;
-            } else if (currentItem.type === "Protein") {
-                alert("Log protein by its specified raw weight.");
-            }
+            totals[currentItem.type]++;
+            updateUI();
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('searchInput').value = "";
         }
+
+        function updateUI() {
+            document.getElementById('greenCount').innerText = `${totals.Green}/3`;
+            document.getElementById('fatCount').innerText = totals.Fat;
+            document.getElementById('condCount').innerText = `${totals.Condiment}/3`;
+        }
+
+        function resetApp() { if(confirm("Reset totals?")) { totals={Green:0, Fat:0, Condiment:0}; updateUI(); } }
     </script>
 </body>
 </html>
